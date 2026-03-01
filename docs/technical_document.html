@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Endpoint Inventory Pipeline — Technical Specification</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        @page {
+            margin: 1in;
+            size: A4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: #1a1a2e;
+            line-height: 1.7;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 32px;
+            background: #fff;
+        }
+
+        .header {
+            border-bottom: 3px solid #1e3a5f;
+            padding-bottom: 20px;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e3a5f;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .header .meta {
+            display: flex;
+            gap: 24px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .header .meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 28px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid #e2e8f0;
+        }
+
+        h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            margin: 20px 0 8px;
+        }
+
+        p {
+            font-size: 13px;
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        ul,
+        ol {
+            font-size: 13px;
+            margin: 8px 0 12px 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .architecture-img {
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .architecture-img img {
+            max-width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .architecture-img p {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-family: 'Consolas', monospace;
+            color: #334155;
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 12px 0 16px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 20px;
+            font-size: 12px;
+        }
+
+        th {
+            background: #1e3a5f;
+            color: #fff;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px 16px;
+            border-radius: 0 6px 6px 0;
+            margin: 12px 0 16px;
+            font-size: 12px;
+            color: #1e40af;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1.5px solid #e2e8f0;
+            font-size: 11px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .architecture-img {
+                page-break-inside: avoid;
+            }
+
+            pre {
+                page-break-inside: avoid;
+            }
+
+            h2 {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>Enterprise Endpoint Inventory Pipeline</h1>
+        <div class="subtitle">Technical Specification Document</div>
+        <div class="meta">
+            <span><strong>Author:</strong> Ragotham Kanchi</span>
+            <span><strong>Version:</strong> 2.0</span>
+            <span><strong>Date:</strong> March 2026</span>
+            <span><strong>Classification:</strong> Internal</span>
+        </div>
+    </div>
+
+    <div class="architecture-img">
+        <img src="architecture.png" alt="Production Architecture Diagram" />
+        <p>Figure 1 — Production Architecture: VNet-Isolated Medallion Pipeline with Unity Catalog Governance</p>
+    </div>
+
+    <h2>1. Cloud Architecture and Scalability</h2>
+    <p>This pipeline is engineered using Microsoft Azure's PaaS and Serverless offerings to provide elastic scalability
+        while mathematically driving idle costs to zero.</p>
+
+    <h3>Ingestion Layer: Azure Functions</h3>
+    <table>
+        <tr>
+            <th>Attribute</th>
+            <th>Dev/Test Tier</th>
+            <th>Production Tier</th>
+        </tr>
+        <tr>
+            <td>Plan</td>
+            <td><code>Y1 Dynamic</code> (Consumption)</td>
+            <td><code>Elastic Premium EP1</code></td>
+        </tr>
+        <tr>
+            <td>Cold Start</td>
+            <td>5-15 seconds</td>
+            <td>Near-zero (pre-warmed instances)</td>
+        </tr>
+        <tr>
+            <td>Execution Limit</td>
+            <td>5 minutes</td>
+            <td>Unlimited</td>
+        </tr>
+        <tr>
+            <td>VNet Integration</td>
+            <td>Not available</td>
+            <td>Full VNet injection with delegated subnet</td>
+        </tr>
+        <tr>
+            <td>Scale</td>
+            <td>Up to 200 instances</td>
+            <td>1,000+ containers (elastic auto-scale)</td>
+        </tr>
+        <tr>
+            <td>Idle Cost</td>
+            <td>$0.00/hour</td>
+            <td>~$0.15/hour (minimum 1 warm instance)</td>
+        </tr>
+    </table>
+    <p>The production tier (<code>EP1</code>) keeps minimum instances eternally warm, eliminating cold-start delays and
+        enabling complex VNet integration with IP firewalls while dynamically auto-scaling to thousands of containers
+        during the 8:00 AM boot-storm window when 1M+ endpoints power on simultaneously.</p>
+
+    <h3>Storage Layer: Azure Data Lake Storage Gen2</h3>
+    <table>
+        <tr>
+            <th>Attribute</th>
+            <th>Dev/Test Tier</th>
+            <th>Production Tier</th>
+        </tr>
+        <tr>
+            <td>Redundancy</td>
+            <td><code>Standard_LRS</code> (Local)</td>
+            <td><code>Standard_ZRS</code> (Zone-Redundant)</td>
+        </tr>
+        <tr>
+            <td>Namespace</td>
+            <td colspan="2">Hierarchical (ADLS Gen2)</td>
+        </tr>
+        <tr>
+            <td>TLS Version</td>
+            <td colspan="2">1.2 minimum</td>
+        </tr>
+        <tr>
+            <td>Containers</td>
+            <td colspan="2">raw / silver / gold / quarantine</td>
+        </tr>
+    </table>
+    <div class="note">
+        <strong>Why ADLS Gen2 over Standard Blob Storage?</strong> The Delta Lake framework relies on atomic rename
+        capabilities at the filesystem level. Standard Blob Storage emulates directories using a flat namespace, which
+        cannot support Delta transaction logs (<code>_delta_log</code>) reliably. ADLS Gen2 provides true POSIX
+        directory architecture required for transactional integrity.
+    </div>
+
+    <h3>Processing Engine: Azure Databricks (Job Compute)</h3>
+    <table>
+        <tr>
+            <th>Attribute</th>
+            <th>Dev/Test Tier</th>
+            <th>Production Tier</th>
+        </tr>
+        <tr>
+            <td>Runtime</td>
+            <td colspan="2">Apache Spark 14.3 LTS (Scala 2.12)</td>
+        </tr>
+        <tr>
+            <td>Cluster Type</td>
+            <td>Single-node <code>Standard_D4s_v3</code></td>
+            <td>Multi-node <code>Standard_D8ds_v4</code> (autoscale 2-8)</td>
+        </tr>
+        <tr>
+            <td>Security Mode</td>
+            <td><code>SINGLE_USER</code></td>
+            <td><code>USER_ISOLATION</code> (Unity Catalog)</td>
+        </tr>
+        <tr>
+            <td>Governance</td>
+            <td>Disabled</td>
+            <td>Unity Catalog: Metastore, Lineage, Audit</td>
+        </tr>
+        <tr>
+            <td>Network</td>
+            <td>Public access</td>
+            <td>VNet-injected (private/public subnets, no public IP)</td>
+        </tr>
+    </table>
+
+    <h2>2. Telemetry and Enterprise Logging</h2>
+    <ul>
+        <li><strong>Azure Functions:</strong> The <code>function_app.py</code> script routes standard Python
+            <code>logging</code> directly to Azure Application Insights. All <code>202 Accepted</code> and
+            <code>500 Server Error</code> results are natively indexed for SLA monitoring.</li>
+        <li><strong>Azure Databricks:</strong> The <code>scd2_processor.py</code> utilizes structured Python logging
+            with timestamps. Databricks inherently hooks into the stdout pipeline, capturing these entries directly into
+            the Driver Logs for real-time observability.</li>
+    </ul>
+
+    <h2>3. Deployment Security Posture</h2>
+    <ol>
+        <li><strong>System-Assigned Managed Identity:</strong> The Azure Function App relies on a Microsoft Entra ID
+            Managed Identity. No connection strings, SAS tokens, or static passwords are hardcoded anywhere in the
+            codebase.</li>
+        <li><strong>Role-Based Access Control (RBAC):</strong> The Bicep template dynamically assigns
+            <code>Storage Blob Data Contributor</code> to the Function App's Service Principal ID.</li>
+        <li><strong>Private Subnets:</strong> The Databricks workspace is injected into a dedicated Virtual Network with
+            <code>public</code> and <code>private</code> delegation subnets. Public IP is disabled.</li>
+        <li><strong>Key Vault Integration:</strong> All secrets (storage account keys, function keys) are stored in
+            Azure Key Vault and accessed via RBAC — never embedded in source code.</li>
+    </ol>
+
+    <h2>4. PySpark Data Processing Engine (ETL)</h2>
+    <p>The core <code>scd2_processor.py</code> notebook executes specialized algorithms to parse, flatten, and historize
+        raw JSON telemetry:</p>
+
+    <h3>4.1 Two-Tier Deduplication</h3>
+    <p><strong>Intra-Batch Filtering:</strong> A PySpark Window function identifies and selects only the single most
+        recent payload for a given endpoint within that execution cycle.</p>
+    <pre><code>windowSpec = Window.partitionBy("EndpointId").orderBy(col("IngestionTimestamp").desc())
+silver_df = clean_df.withColumn("rank", rank().over(windowSpec)) \
+    .filter(col("rank") == 1).drop("rank")</code></pre>
+
+    <p><strong>Cross-Batch Hashing:</strong> PySpark computes a deterministic SHA-256 hash of the fully parsed payload.
+        During the Delta Merge, it silently discards incoming rows if the data identically matches the active Gold table
+        record.</p>
+    <pre><code>exclude_cols = {"EndpointId", "IngestionTimestamp", "MessageId", "QuarantineReason", "IsActive", "ValidFrom", "ValidTo"}
+hash_cols = [c for c in sorted(silver_df.columns) if c not in exclude_cols]
+silver_df = silver_df.withColumn("PayloadHash", sha2(to_json(struct(*[col(c) for c in hash_cols])), 256))</code></pre>
+
+    <h3>4.2 First-Normal-Form Array Flattening</h3>
+    <p>Endpoints transmit software and driver lists as heavily nested JSON arrays. The processor dynamically detects and
+        atomizes these arrays into cleanly flattened rows suitable for Power BI dimensional modeling.</p>
+    <pre><code>for field in silver_df.schema.fields:
+    if isinstance(field.dataType, ArrayType):
+        silver_df = silver_df.withColumn(field.name, explode_outer(col(field.name)))</code></pre>
+
+    <h3>4.3 Graceful Error Interception</h3>
+    <p>Standard Spark behavior throws hard crash exceptions when reading empty directories or encountering rotating
+        access keys (403). The processor wraps the engine in custom exception handlers, allowing the cluster to
+        gracefully skip missing data without terminating the job.</p>
+    <pre><code>try:
+    raw_df = spark.read.json(raw_path)
+except AnalysisException as e:
+    if "Path does not exist" in str(e):
+        logger.info("Landing zone is empty (no recent files). Skipping.")
+        return</code></pre>
+
+    <div class="footer">
+        Enterprise Endpoint Inventory Pipeline — Technical Specification v2.0 | Ragotham Kanchi | March 2026<br />
+        Open in browser and press Ctrl+P to generate PDF
+    </div>
+
+</body>
+
+</html>

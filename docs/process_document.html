@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enterprise Endpoint Inventory Pipeline — Deployment Process Guide</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+        @page {
+            margin: 1in;
+            size: A4;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            color: #1a1a2e;
+            line-height: 1.7;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 40px 32px;
+            background: #fff;
+        }
+
+        .header {
+            border-bottom: 3px solid #1e3a5f;
+            padding-bottom: 20px;
+            margin-bottom: 32px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            font-weight: 800;
+            color: #1e3a5f;
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+
+        .header .meta {
+            display: flex;
+            gap: 24px;
+            margin-top: 12px;
+            font-size: 12px;
+            color: #475569;
+        }
+
+        .header .meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        h2 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #1e3a5f;
+            margin: 28px 0 12px;
+            padding-bottom: 6px;
+            border-bottom: 1.5px solid #e2e8f0;
+        }
+
+        h3 {
+            font-size: 14px;
+            font-weight: 700;
+            color: #334155;
+            margin: 20px 0 8px;
+        }
+
+        p {
+            font-size: 13px;
+            margin-bottom: 12px;
+            text-align: justify;
+        }
+
+        ul,
+        ol {
+            font-size: 13px;
+            margin: 8px 0 12px 20px;
+        }
+
+        li {
+            margin-bottom: 6px;
+        }
+
+        .architecture-img {
+            text-align: center;
+            margin: 24px 0;
+        }
+
+        .architecture-img img {
+            max-width: 100%;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .architecture-img p {
+            font-size: 11px;
+            color: #64748b;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        code {
+            background: #f1f5f9;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-size: 12px;
+            font-family: 'Consolas', monospace;
+            color: #334155;
+        }
+
+        pre {
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 16px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 12px 0 16px;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+            color: inherit;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 20px;
+            font-size: 12px;
+        }
+
+        th {
+            background: #1e3a5f;
+            color: #fff;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        tr:nth-child(even) td {
+            background: #f8fafc;
+        }
+
+        .note {
+            background: #eff6ff;
+            border-left: 4px solid #3b82f6;
+            padding: 12px 16px;
+            border-radius: 0 6px 6px 0;
+            margin: 12px 0 16px;
+            font-size: 12px;
+            color: #1e40af;
+        }
+
+        .warning {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 12px 16px;
+            border-radius: 0 6px 6px 0;
+            margin: 12px 0 16px;
+            font-size: 12px;
+            color: #92400e;
+        }
+
+        .step-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 28px;
+            height: 28px;
+            background: #1e3a5f;
+            color: #fff;
+            border-radius: 50%;
+            font-weight: 700;
+            font-size: 13px;
+            margin-right: 8px;
+            flex-shrink: 0;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin: 16px 0;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .step-content strong {
+            color: #1e3a5f;
+        }
+
+        .footer {
+            margin-top: 40px;
+            padding-top: 16px;
+            border-top: 1.5px solid #e2e8f0;
+            font-size: 11px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        @media print {
+            body {
+                padding: 0;
+            }
+
+            .architecture-img {
+                page-break-inside: avoid;
+            }
+
+            pre {
+                page-break-inside: avoid;
+            }
+
+            h2 {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header">
+        <h1>Enterprise Endpoint Inventory Pipeline</h1>
+        <div class="subtitle">Deployment Process Guide</div>
+        <div class="meta">
+            <span><strong>Author:</strong> Ragotham Kanchi</span>
+            <span><strong>Version:</strong> 2.0</span>
+            <span><strong>Date:</strong> March 2026</span>
+            <span><strong>Classification:</strong> Internal</span>
+        </div>
+    </div>
+
+    <h2>1. Introduction</h2>
+    <p>This document outlines the operational process flow for capturing hardware, software, driver, and custom
+        inventory data from 1M+ client endpoints and ingesting it into a centralized Azure Databricks Delta Lake with
+        full SCD Type 2 dimensional history.</p>
+
+    <div class="architecture-img">
+        <img src="architecture.png" alt="Production Architecture Diagram" />
+        <p>Figure 1 — End-to-End Production Architecture with VNet Boundaries and Unity Catalog Governance</p>
+    </div>
+
+    <h2>2. Process Flow Architecture</h2>
+
+    <h3>Phase 1: Edge Collection</h3>
+    <p>A PowerShell agent (<code>inventory_agent.ps1</code>) executes on the client endpoint via Intune, SCCM, or Group
+        Policy on a daily schedule.</p>
+    <div class="step"><span class="step-num">1</span>
+        <div class="step-content"><strong>Payload Assembly:</strong> The agent queries WMI and system registries to
+            build 4 distinct JSON payloads: Hardware, Software, Drivers, and Custom.</div>
+    </div>
+    <div class="step"><span class="step-num">2</span>
+        <div class="step-content"><strong>SHA-256 Hash Gate:</strong> Before transmitting data to the cloud, the agent
+            computes a SHA-256 hash of each JSON payload and compares it to the locally stored hash from the previous
+            execution. If the data is identical, transmission is skipped entirely — saving significant bandwidth across
+            1M+ endpoints.</div>
+    </div>
+    <div class="step"><span class="step-num">3</span>
+        <div class="step-content"><strong>Jittered Transmission:</strong> If the hash differs, the script applies a
+            randomized startup delay (0 to 300 seconds) to prevent API stampedes, then fires an HTTP POST to the Azure
+            Function endpoint carrying only the modified payload.</div>
+    </div>
+
+    <h3>Phase 2: Ingestion Landing Zone</h3>
+    <p>The Azure Function (<code>function_app.py</code>) receives the HTTP POST request and routes it to the data lake.
+    </p>
+
+    <div class="note">
+        <strong>Why Azure Functions Elastic Premium (EP1)?</strong> Endpoint inventory traffic is highly uneven. When
+        1M+ laptops power on at 8:00 AM, the EP1 tier instantly scales to thousands of containers to absorb the POST
+        requests, then releases them by 8:15 AM. Pre-warmed instances eliminate cold-start latency while VNet
+        integration enables secure network isolation.
+    </div>
+
+    <div class="step"><span class="step-num">1</span>
+        <div class="step-content"><strong>Authentication:</strong> Validates the Function Key via the
+            <code>x-functions-key</code> header.</div>
+    </div>
+    <div class="step"><span class="step-num">2</span>
+        <div class="step-content"><strong>Extraction:</strong> Extracts <code>EndpointId</code> and
+            <code>PayloadType</code> from the JSON body.</div>
+    </div>
+    <div class="step"><span class="step-num">3</span>
+        <div class="step-content"><strong>Enrichment:</strong> Injects server-side <code>IngestionTimestamp</code> (UTC)
+            and <code>MessageId</code> (UUID v4) for deduplication and lineage tracking.</div>
+    </div>
+    <div class="step"><span class="step-num">4</span>
+        <div class="step-content"><strong>Storage:</strong> Streams the raw JSON securely into ADLS Gen2 using the
+            Function App's System-Assigned Managed Identity.</div>
+    </div>
+
+    <div class="note">
+        <strong>Why ADLS Gen2 over Standard Blob Storage?</strong> Standard Blob Storage uses a flat namespace and
+        emulates directories. Delta Lake relies on atomic rename and filesystem-level locking for its
+        <code>_delta_log</code> transaction history. ADLS Gen2 provides a true POSIX Hierarchical Namespace, which is
+        required for transactional integrity.
+    </div>
+
+    <p><strong>Landing Zone Path Structure:</strong></p>
+    <pre><code>raw/{PayloadType}/YYYY/MM/DD/{EndpointId}_{UUID}.json</code></pre>
+
+    <h3>Phase 3: Medallion Processing Engine</h3>
+    <p>An Azure Databricks Job cluster activates on a daily schedule and executes the <code>scd2_processor.py</code>
+        notebook.</p>
+
+    <div class="note">
+        <strong>Why Job Clusters?</strong> Interactive clusters are designed for 24/7 data-science exploration and cost
+        significantly more per compute hour. Job clusters boot up, execute the ETL pipeline, and terminate immediately —
+        minimizing billable uptime. The production tier autoscales <code>Standard_D8ds_v4</code> worker nodes (2 to 8)
+        based on payload volume with Unity Catalog governance enabled.
+    </div>
+
+    <h3>Bronze Layer — Raw Validation and Error Interception</h3>
+    <ol>
+        <li>Reads all new JSON files from the landing zone using <code>spark.read.json</code>.</li>
+        <li>Custom <code>AnalysisException</code> handlers gracefully skip empty directories and 403 Access Denied
+            errors without terminating the cluster.</li>
+        <li>Identifies payloads containing PySpark <code>_corrupt_record</code> fields (malformed JSON) and routes them
+            to a dedicated quarantine Delta table.</li>
+        <li>Records missing <code>EndpointId</code> are also quarantined with reason tagging.</li>
+    </ol>
+
+    <h3>Silver Layer — Two-Tier Deduplication and Flattening</h3>
+    <ol>
+        <li><strong>Intra-Batch Deduplication:</strong> In mobile environments, endpoints may send duplicate payloads
+            due to network retries. PySpark Window functions partitioned by <code>EndpointId</code> select only the most
+            recent payload per execution cycle.</li>
+        <li><strong>Array Normalization:</strong> Dynamically flattens nested JSON arrays (e.g.,
+            <code>InstalledSoftware</code>) into top-level columns via <code>explode_outer</code> for First Normal Form
+            (1NF) compatibility.</li>
+        <li><strong>Deterministic Hashing:</strong> Generates a SHA-256 hash of the entire payload for cross-batch
+            deduplication during the Gold merge phase.</li>
+    </ol>
+
+    <h3>Gold Layer — SCD Type 2 Delta Merge</h3>
+    <ol>
+        <li>Cross-references incoming records against active records in the Gold Delta tables
+            (<code>dim_hardware</code>, <code>dim_software</code>, <code>dim_drivers</code>, <code>dim_custom</code>).
+        </li>
+        <li>Performs a cryptographic comparison: <code>source.PayloadHash != target.PayloadHash</code>. If data is
+            identical, the record is silently skipped.</li>
+        <li>If an endpoint's data has changed, the existing active record is expired (<code>IsActive = False</code>,
+            <code>ValidTo = current_timestamp()</code>).</li>
+        <li>The new payload is inserted as a fresh record with <code>IsActive = True</code> and
+            <code>ValidFrom = current_timestamp()</code>.</li>
+        <li>Schema auto-evolution is enabled via <code>spark.databricks.delta.schema.autoMerge</code> to accommodate new
+            JSON fields without manual DDL.</li>
+    </ol>
+
+    <h2>3. Disaster Recovery and Fallback</h2>
+    <p>If the Databricks cluster is unresponsive or unavailable, the Edge Agent continues to deposit JSON payloads into
+        the ADLS Gen2 raw zone. No data is lost. Upon the next successful cluster startup, Databricks processes the
+        accumulated backlog of JSON files. The idempotent SCD2 merge logic ensures no duplicate dimension rows are
+        created even if the same data is processed multiple times.</p>
+
+    <div class="warning">
+        <strong>Important:</strong> The quarantine Delta table should be monitored via Azure Monitor alerts. Sustained
+        quarantine growth may indicate a schema change at the edge agent level or network corruption during
+        transmission.
+    </div>
+
+    <h2>4. Deployment Checklist</h2>
+    <table>
+        <tr>
+            <th>Step</th>
+            <th>Action</th>
+            <th>Tool</th>
+        </tr>
+        <tr>
+            <td>1</td>
+            <td>Deploy Azure infrastructure (VNet, ADLS, Functions, Databricks, Key Vault)</td>
+            <td><code>az deployment group create</code> with <code>main.bicep</code></td>
+        </tr>
+        <tr>
+            <td>2</td>
+            <td>Deploy Function App code</td>
+            <td><code>func azure functionapp publish</code></td>
+        </tr>
+        <tr>
+            <td>3</td>
+            <td>Retrieve Function Key</td>
+            <td><code>az functionapp keys list</code></td>
+        </tr>
+        <tr>
+            <td>4</td>
+            <td>Upload <code>scd2_processor.py</code> to Databricks workspace</td>
+            <td>Databricks Workspace UI or CLI</td>
+        </tr>
+        <tr>
+            <td>5</td>
+            <td>Create Databricks Job with 5 sequential tasks (hw, sw, drv, custom, audit)</td>
+            <td>Databricks Jobs API or UI</td>
+        </tr>
+        <tr>
+            <td>6</td>
+            <td>Configure storage key in Databricks job spark_conf or Key Vault</td>
+            <td>Key Vault secret reference</td>
+        </tr>
+        <tr>
+            <td>7</td>
+            <td>Deploy edge agent via Intune/GPO with correct API URL and key</td>
+            <td>Group Policy or Intune</td>
+        </tr>
+        <tr>
+            <td>8</td>
+            <td>Configure daily schedule for Databricks job</td>
+            <td>Databricks scheduled trigger</td>
+        </tr>
+        <tr>
+            <td>9</td>
+            <td>Set up Power BI DirectQuery connection to Gold Delta tables</td>
+            <td>Power BI Desktop</td>
+        </tr>
+    </table>
+
+    <div class="footer">
+        Enterprise Endpoint Inventory Pipeline — Deployment Process Guide v2.0 | Ragotham Kanchi | March 2026<br />
+        Open in browser and press Ctrl+P to generate PDF
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,40 @@
+# Azure Function app
+api/__pycache__/
+api/.python_packages/
+api/.funcignore
+api/local.settings.json
+
+# PySpark
+*.pyc
+__pycache__/
+.ipynb_checkpoints/
+metastore_db/
+derby.log
+spark-warehouse/
+
+# Logs and debug
+*.log
+logs/
+func_logs/
+deploy_error.txt
+test_results.txt
+
+# Local data
+pyspark_run.log
+usage.json
+*.zip
+
+# Secrets (never commit)
+*.env
+local.settings.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Debug scripts
+debug_*.py

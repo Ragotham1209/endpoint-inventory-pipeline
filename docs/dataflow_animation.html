@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Enterprise Endpoint Inventory Pipeline — Data Flow Animation</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(160deg, #06091a 0%, #0c1445 40%, #111b54 70%, #0a0e27 100%);
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      color: #e2e8f0;
+    }
+
+    .title-bar {
+      text-align: center;
+      padding: 14px 0 4px;
+    }
+
+    .title-bar h1 {
+      font-size: 18px;
+      font-weight: 800;
+      background: linear-gradient(90deg, #60a5fa, #a78bfa, #f472b6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .title-bar p {
+      font-size: 10px;
+      color: #64748b;
+      margin-top: 2px;
+    }
+
+    .canvas {
+      position: relative;
+      width: 1160px;
+      height: 560px;
+      margin: 6px auto 0;
+    }
+
+    .vnet-box {
+      position: absolute;
+      border: 1.5px dashed #334155;
+      border-radius: 12px;
+      padding: 6px;
+    }
+
+    .vnet-box .vnet-label {
+      position: absolute;
+      top: -10px;
+      left: 16px;
+      background: #0f172a;
+      padding: 0 8px;
+      font-size: 9px;
+      font-weight: 600;
+      color: #475569;
+      letter-spacing: 0.5px;
+    }
+
+    .corp-vnet {
+      left: 10px;
+      top: 70px;
+      width: 150px;
+      height: 130px;
+      transition: border-color 0.5s ease, box-shadow 0.5s ease;
+    }
+
+    .corp-vnet.active {
+      border-color: #3b82f6cc;
+      box-shadow: 0 0 25px #3b82f644, inset 0 0 25px #3b82f611;
+    }
+
+    .corp-vnet .vnet-label {
+      transition: color 0.5s ease, text-shadow 0.5s ease;
+    }
+
+    .corp-vnet.active .vnet-label {
+      color: #60a5fa;
+      text-shadow: 0 0 8px #3b82f688;
+    }
+
+    .dbricks-vnet {
+      left: 270px;
+      top: 310px;
+      width: 700px;
+      height: 230px;
+      border-color: #7c3aed44;
+      transition: border-color 0.5s ease, box-shadow 0.5s ease;
+    }
+
+    .dbricks-vnet.active {
+      border-color: #7c3aedcc;
+      box-shadow: 0 0 25px #7c3aed44, inset 0 0 25px #7c3aed11;
+    }
+
+    .dbricks-vnet .vnet-label {
+      transition: color 0.5s ease, text-shadow 0.5s ease;
+    }
+
+    .dbricks-vnet.active .vnet-label {
+      color: #a78bfa;
+      text-shadow: 0 0 8px #7c3aed88;
+    }
+
+    .node {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: filter 0.4s, transform 0.3s;
+      z-index: 2;
+    }
+
+    .node.dim {
+      filter: brightness(0.35);
+    }
+
+    .node.glow {
+      transform: scale(1.07);
+    }
+
+    .node-icon {
+      width: 62px;
+      height: 62px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.35);
+      position: relative;
+      overflow: visible;
+    }
+
+    .node-icon svg {
+      width: 32px;
+      height: 32px;
+    }
+
+    .node-label {
+      font-size: 9.5px;
+      font-weight: 600;
+      margin-top: 5px;
+      text-align: center;
+      color: #cbd5e1;
+    }
+
+    .node-sub {
+      font-size: 8px;
+      color: #475569;
+      text-align: center;
+      max-width: 100px;
+      margin-top: 1px;
+    }
+
+    .badge {
+      position: absolute;
+      top: -7px;
+      right: -7px;
+      background: #ef4444;
+      color: #fff;
+      font-size: 8px;
+      font-weight: 700;
+      padding: 1px 5px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.3s;
+      z-index: 10;
+    }
+
+    .badge.on {
+      opacity: 1;
+    }
+
+    .n-office .node-icon {
+      background: linear-gradient(135deg, #1e3a5f, #2563eb);
+    }
+
+    .n-remote .node-icon {
+      background: linear-gradient(135deg, #1e3a5f, #0ea5e9);
+    }
+
+    .n-internet .node-icon {
+      background: linear-gradient(135deg, #334155, #64748b);
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+    }
+
+    .n-internet .node-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .n-pubip .node-icon {
+      background: linear-gradient(135deg, #7c3aed, #a78bfa);
+    }
+
+    .n-func .node-icon {
+      background: linear-gradient(135deg, #7c3aed, #c084fc);
+    }
+
+    .n-insights .node-icon {
+      background: linear-gradient(135deg, #0d9488, #2dd4bf);
+      width: 44px;
+      height: 44px;
+    }
+
+    .n-insights .node-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .n-adls .node-icon {
+      background: linear-gradient(135deg, #0891b2, #22d3ee);
+    }
+
+    .n-entra .node-icon {
+      background: linear-gradient(135deg, #0369a1, #38bdf8);
+    }
+
+    .n-keyvault .node-icon {
+      background: linear-gradient(135deg, #b45309, #f59e0b);
+    }
+
+    .n-bronze .node-icon {
+      background: linear-gradient(135deg, #92400e, #d97706);
+    }
+
+    .n-silver .node-icon {
+      background: linear-gradient(135deg, #4b5563, #9ca3af);
+    }
+
+    .n-gold .node-icon {
+      background: linear-gradient(135deg, #a16207, #facc15);
+    }
+
+    .n-quarantine .node-icon {
+      background: linear-gradient(135deg, #991b1b, #ef4444);
+    }
+
+    .n-unity .node-icon {
+      background: linear-gradient(135deg, #4338ca, #818cf8);
+    }
+
+    .n-pbi .node-icon {
+      background: linear-gradient(135deg, #0f766e, #34d399);
+    }
+
+    svg.arrows {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    svg.arrows line {
+      stroke: #1e293b;
+      stroke-width: 2;
+      fill: none;
+    }
+
+    svg.arrows .arrow-active {
+      stroke: #60a5fa;
+      stroke-width: 2.5;
+    }
+
+    .dot {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #60a5fa;
+      box-shadow: 0 0 10px #60a5fa;
+      opacity: 0;
+      z-index: 5;
+      transition: opacity 0.2s;
+    }
+
+    .status-bar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      text-align: center;
+      padding: 8px 0;
+      background: linear-gradient(180deg, transparent, #06091a88);
+    }
+
+    .status-bar .main {
+      font-size: 12px;
+      font-weight: 600;
+      color: #60a5fa;
+      min-height: 16px;
+    }
+
+    .status-bar .detail {
+      font-size: 9px;
+      color: #475569;
+      margin-top: 2px;
+      min-height: 12px;
+    }
+
+    .unity-details {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 8px;
+      color: #94a3b8;
+    }
+
+    .unity-details span {
+      background: #1e1b4b88;
+      padding: 2px 6px;
+      border-radius: 4px;
+      border: 1px solid #312e8144;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .unity-details span svg {
+      width: 10px;
+      height: 10px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="title-bar">
+    <h1>Enterprise Endpoint Inventory Pipeline — Production Data Flow</h1>
+    <p>Real-Time Animated Architecture Diagram</p>
+  </div>
+
+  <div class="canvas" id="canvas">
+    <div class="vnet-box corp-vnet"><span class="vnet-label">Corporate VNet / VPN</span></div>
+    <div class="vnet-box dbricks-vnet"><span class="vnet-label">Databricks VNet — Private / Public Subnets</span></div>
+
+    <!-- Entra ID -->
+    <div class="node n-entra" id="entra" style="left:480px;top:0px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L2 7v6c0 5.55 4.84 10.74 10 12 5.16-1.26 10-6.45 10-12V7L12 2z" fill="#fff" opacity="0.9" />
+          <path d="M12 5l-6 3v4c0 3.87 3.36 7.49 6 8.35 2.64-.86 6-4.48 6-8.35V8l-6-3z" fill="#0078D4" />
+          <path d="M12 8a2.5 2.5 0 100 5 2.5 2.5 0 000-5zm0 6.5c-2.33 0-4.5 1.17-4.5 2.5h9c0-1.33-2.17-2.5-4.5-2.5z"
+            fill="#fff" />
+        </svg>
+      </div>
+      <div class="node-label">Microsoft Entra ID</div>
+      <div class="node-sub">Managed Identity</div>
+    </div>
+
+    <!-- Key Vault -->
+    <div class="node n-keyvault" id="keyvault" style="left:340px;top:0px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="10" width="14" height="10" rx="2" fill="#fff" opacity="0.9" />
+          <path d="M12 4a3 3 0 00-3 3v3h6V7a3 3 0 00-3-3z" stroke="#fff" stroke-width="1.5" fill="none" />
+          <circle cx="12" cy="15" r="1.5" fill="#b45309" />
+          <line x1="12" y1="16.5" x2="12" y2="18" stroke="#b45309" stroke-width="1.5" />
+        </svg>
+      </div>
+      <div class="node-label">Key Vault</div>
+    </div>
+
+    <!-- Office Endpoints -->
+    <div class="node n-office" id="office" style="left:30px;top:90px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="12" rx="2" fill="#fff" opacity="0.9" />
+          <rect x="5" y="6" width="14" height="8" rx="1" fill="#2563eb" />
+          <rect x="8" y="17" width="8" height="1.5" rx="0.5" fill="#fff" opacity="0.7" />
+          <rect x="6" y="18.5" width="12" height="1" rx="0.5" fill="#fff" opacity="0.5" />
+        </svg>
+        <span class="badge" id="b-office">Private</span>
+      </div>
+      <div class="node-label">Office Endpoints</div>
+      <div class="node-sub">Private IP / VPN</div>
+    </div>
+
+    <!-- Remote -->
+    <div class="node n-remote" id="remote" style="left:30px;top:220px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="4" width="18" height="12" rx="2" fill="#fff" opacity="0.9" />
+          <rect x="5" y="6" width="14" height="8" rx="1" fill="#0ea5e9" />
+          <rect x="8" y="17" width="8" height="1.5" rx="0.5" fill="#fff" opacity="0.7" />
+          <rect x="6" y="18.5" width="12" height="1" rx="0.5" fill="#fff" opacity="0.5" />
+        </svg>
+        <span class="badge" id="b-remote">Public</span>
+      </div>
+      <div class="node-label">Remote</div>
+      <div class="node-sub">Public IP</div>
+    </div>
+
+    <!-- Internet Cloud -->
+    <div class="node n-internet" id="internet" style="left:140px;top:236px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M6.5 18A4.5 4.5 0 016 9.5a6 6 0 0111.18-2A5 5 0 0119 17.5H6.5z" fill="#fff" opacity="0.85"
+            stroke="#94a3b8" stroke-width="0.5" />
+        </svg>
+      </div>
+      <div class="node-label">Internet</div>
+    </div>
+
+    <!-- Public IP -->
+    <div class="node n-pubip" id="pubip" style="left:230px;top:140px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" fill="#fff" opacity="0.9" />
+          <circle cx="12" cy="12" r="9" stroke="#7c3aed" stroke-width="1" fill="none" />
+          <ellipse cx="12" cy="12" rx="4" ry="9" stroke="#7c3aed" stroke-width="0.8" fill="none" />
+          <line x1="3" y1="12" x2="21" y2="12" stroke="#7c3aed" stroke-width="0.8" />
+          <line x1="4.5" y1="7.5" x2="19.5" y2="7.5" stroke="#7c3aed" stroke-width="0.5" />
+          <line x1="4.5" y1="16.5" x2="19.5" y2="16.5" stroke="#7c3aed" stroke-width="0.5" />
+        </svg>
+      </div>
+      <div class="node-label">Public IP</div>
+      <div class="node-sub">TLS 1.2</div>
+    </div>
+
+    <!-- Azure Functions -->
+    <div class="node n-func" id="func" style="left:370px;top:130px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M13.5 3L7 13h4l-1.5 8L16 11h-4L13.5 3z" fill="#fff" opacity="0.95" stroke="#fff" stroke-width="0.5"
+            stroke-linejoin="round" />
+        </svg>
+        <span class="badge" id="b-func">POST</span>
+      </div>
+      <div class="node-label">Azure Functions</div>
+      <div class="node-sub">EP1 · 1→1000+</div>
+    </div>
+
+    <!-- App Insights -->
+    <div class="node n-insights" id="insights" style="left:380px;top:232px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="10" r="6" fill="#fff" opacity="0.9" />
+          <path d="M12 4a6 6 0 100 12 6 6 0 000-12zm0 2a4 4 0 110 8 4 4 0 010-8z" fill="#0d9488" />
+          <path d="M11 8v4l2.5 1.5" stroke="#0d9488" stroke-width="1.5" stroke-linecap="round" />
+          <path d="M12 16v4M9 20h6" stroke="#fff" stroke-width="1.2" stroke-linecap="round" />
+        </svg>
+      </div>
+      <div class="node-label">App Insights</div>
+    </div>
+
+    <!-- ADLS Gen2 -->
+    <div class="node n-adls" id="adls" style="left:530px;top:130px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 6c0 1.1 3.58 2 8 2s8-.9 8-2" stroke="#fff" stroke-width="1.2" />
+          <ellipse cx="12" cy="6" rx="8" ry="2" fill="#fff" opacity="0.3" />
+          <path d="M4 6v12c0 1.1 3.58 2 8 2s8-.9 8-2V6" stroke="#fff" stroke-width="1.2" fill="none" />
+          <path d="M4 10c0 1.1 3.58 2 8 2s8-.9 8-2" stroke="#fff" stroke-width="0.8" opacity="0.6" />
+          <path d="M4 14c0 1.1 3.58 2 8 2s8-.9 8-2" stroke="#fff" stroke-width="0.8" opacity="0.6" />
+        </svg>
+      </div>
+      <div class="node-label">ADLS Gen2 (ZRS)</div>
+      <div class="node-sub">raw/ silver/ gold/ quarantine/</div>
+    </div>
+
+    <!-- Unity Catalog -->
+    <div class="node n-unity" id="unity" style="left:290px;top:345px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="4" y="3" width="16" height="18" rx="2" fill="#fff" opacity="0.9" />
+          <line x1="8" y1="8" x2="16" y2="8" stroke="#4338ca" stroke-width="1.2" />
+          <line x1="8" y1="11" x2="16" y2="11" stroke="#4338ca" stroke-width="1.2" />
+          <line x1="8" y1="14" x2="13" y2="14" stroke="#4338ca" stroke-width="1.2" />
+          <rect x="6" y="5" width="3" height="3" rx="0.5" fill="#4338ca" opacity="0.3" />
+        </svg>
+      </div>
+      <div class="node-label">Unity Catalog</div>
+    </div>
+    <div class="unity-details" style="left:275px;top:430px;">
+      <span><svg viewBox="0 0 24 24" fill="none">
+          <rect x="3" y="3" width="7" height="7" rx="1" fill="#818cf8" />
+          <rect x="14" y="3" width="7" height="7" rx="1" fill="#818cf8" />
+          <rect x="3" y="14" width="7" height="7" rx="1" fill="#818cf8" />
+          <rect x="14" y="14" width="7" height="7" rx="1" fill="#818cf8" />
+        </svg> Metastore</span>
+      <span><svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 12h4m4 0h4m-8-4h4m-4 8h4" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round" />
+          <circle cx="8" cy="12" r="1.5" fill="#818cf8" />
+          <circle cx="16" cy="12" r="1.5" fill="#818cf8" />
+          <circle cx="12" cy="8" r="1.5" fill="#818cf8" />
+          <circle cx="12" cy="16" r="1.5" fill="#818cf8" />
+        </svg> Data Lineage</span>
+      <span><svg viewBox="0 0 24 24" fill="none">
+          <rect x="5" y="10" width="14" height="10" rx="2" fill="#818cf8" />
+          <path d="M12 4a3 3 0 00-3 3v3h6V7a3 3 0 00-3-3z" stroke="#818cf8" stroke-width="1.5" fill="none" />
+        </svg> USER_ISOLATION</span>
+      <span><svg viewBox="0 0 24 24" fill="none">
+          <path d="M4 5h16M4 9h12M4 13h14M4 17h10" stroke="#818cf8" stroke-width="1.5" stroke-linecap="round" />
+        </svg> Audit Logging</span>
+    </div>
+
+    <!-- Bronze -->
+    <div class="node n-bronze" id="bronze" style="left:480px;top:340px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7l9 5 9-5-9-5z" fill="#fff" opacity="0.9" />
+          <path d="M3 17l9 5 9-5" stroke="#fff" stroke-width="1.2" fill="none" />
+          <path d="M3 12l9 5 9-5" stroke="#fff" stroke-width="1.2" fill="none" />
+        </svg>
+        <span class="badge" id="b-bronze"></span>
+      </div>
+      <div class="node-label">Bronze</div>
+      <div class="node-sub">Validation</div>
+    </div>
+
+    <!-- Silver -->
+    <div class="node n-silver" id="silver" style="left:620px;top:340px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7l9 5 9-5-9-5z" fill="#fff" opacity="0.9" />
+          <path d="M3 17l9 5 9-5" stroke="#fff" stroke-width="1.2" fill="none" />
+          <path d="M3 12l9 5 9-5" stroke="#fff" stroke-width="1.2" fill="none" />
+        </svg>
+        <span class="badge" id="b-silver"></span>
+      </div>
+      <div class="node-label">Silver</div>
+      <div class="node-sub">Dedup + Flatten</div>
+    </div>
+
+    <!-- Gold -->
+    <div class="node n-gold" id="gold" style="left:760px;top:340px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 7l9 5 9-5-9-5z" fill="#fff" opacity="0.9" />
+          <path d="M3 17l9 5 9-5" stroke="#fff" stroke-width="1.2" fill="none" />
+          <path d="M3 12l9 5 9-5" stroke="#fff" stroke-width="1.2" fill="none" />
+        </svg>
+        <span class="badge" id="b-gold"></span>
+      </div>
+      <div class="node-label">Gold</div>
+      <div class="node-sub">SCD2 Merge</div>
+    </div>
+
+    <!-- Quarantine -->
+    <div class="node n-quarantine" id="quarantine" style="left:480px;top:456px;">
+      <div class="node-icon" style="width:50px;height:50px;">
+        <svg viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.5" fill="none" opacity="0.9" />
+          <line x1="6" y1="6" x2="18" y2="18" stroke="#fff" stroke-width="1.5" opacity="0.9" />
+        </svg>
+        <span class="badge" id="b-quar"></span>
+      </div>
+      <div class="node-label">Quarantine</div>
+    </div>
+
+    <!-- Power BI -->
+    <div class="node n-pbi" id="pbi" style="left:920px;top:340px;">
+      <div class="node-icon">
+        <svg viewBox="0 0 24 24" fill="none">
+          <rect x="14" y="4" width="4" height="16" rx="1" fill="#fff" opacity="0.9" />
+          <rect x="8" y="8" width="4" height="12" rx="1" fill="#fff" opacity="0.7" />
+          <rect x="2" y="12" width="4" height="8" rx="1" fill="#fff" opacity="0.5" />
+        </svg>
+      </div>
+      <div class="node-label">Power BI</div>
+      <div class="node-sub">DirectQuery</div>
+    </div>
+
+    <div class="dot" id="dot"></div>
+
+    <svg class="arrows" viewBox="0 0 1160 560">
+      <line id="a1" x1="95" y1="140" x2="240" y2="165" />
+      <line id="a2a" x1="95" y1="255" x2="148" y2="255" />
+      <line id="a2b" x1="172" y1="255" x2="245" y2="185" />
+      <line id="a3" x1="290" y1="170" x2="380" y2="165" />
+      <line id="a4" x1="435" y1="165" x2="540" y2="165" />
+      <line id="a5" x1="565" y1="195" x2="510" y2="350" />
+      <line id="a6" x1="545" y1="375" x2="630" y2="375" />
+      <line id="a7" x1="685" y1="375" x2="770" y2="375" />
+      <line id="a8" x1="825" y1="375" x2="930" y2="375" />
+      <line id="a-q" x1="510" y1="405" x2="510" y2="458" stroke="#7f1d1d" />
+      <line x1="405" y1="195" x2="405" y2="240" stroke-dasharray="4,3" stroke="#0d9488" />
+      <line x1="512" y1="60" x2="400" y2="135" stroke-dasharray="3,3" stroke="#1e40af44" />
+      <line x1="512" y1="60" x2="560" y2="135" stroke-dasharray="3,3" stroke="#1e40af44" />
+      <line x1="371" y1="62" x2="402" y2="135" stroke-dasharray="3,3" stroke="#f59e0b55" />
+    </svg>
+
+    <div class="status-bar">
+      <div class="main" id="statusMain"></div>
+      <div class="detail" id="statusDetail"></div>
+    </div>
+  </div>
+
+  <script>
+    const dot = document.getElementById('dot'), statusMain = document.getElementById('statusMain'), statusDetail = document.getElementById('statusDetail');
+    const pos = { office: [62, 120], remote: [62, 250], internet: [162, 256], pubip: [262, 168], func: [402, 158], insights: [402, 256], adls: [562, 158], bronze: [512, 368], silver: [652, 368], gold: [792, 368], quarantine: [512, 478], unity: [322, 372], pbi: [952, 368], entra: [512, 28], keyvault: [362, 28] };
+    const allNodes = ['office', 'remote', 'internet', 'pubip', 'func', 'insights', 'adls', 'bronze', 'silver', 'gold', 'quarantine', 'unity', 'pbi', 'entra', 'keyvault'];
+    const dbricksVnet = document.querySelector('.dbricks-vnet');
+    const corpVnet = document.querySelector('.corp-vnet');
+
+    function setActive(ids) {
+      allNodes.forEach(n => { const el = document.getElementById(n); if (ids.includes(n)) { el.classList.add('glow'); el.classList.remove('dim') } else { el.classList.remove('glow'); el.classList.add('dim') } });
+      // Highlight Databricks VNet when any Databricks node is active
+      const dbNodes = ['bronze', 'silver', 'gold', 'quarantine', 'unity'];
+      if (dbNodes.some(d => ids.includes(d))) { dbricksVnet.classList.add('active'); } else { dbricksVnet.classList.remove('active'); }
+      // Highlight Corporate VNet when office endpoint is active
+      if (ids.includes('office')) { corpVnet.classList.add('active'); } else { corpVnet.classList.remove('active'); }
+    }
+    function clearAll() { allNodes.forEach(n => { const el = document.getElementById(n); el.classList.remove('glow', 'dim') }); dbricksVnet.classList.remove('active'); corpVnet.classList.remove('active'); }
+    function setBadge(id, text) { const b = document.getElementById(id); if (!b) return; if (text) { b.textContent = text; b.classList.add('on') } else { b.classList.remove('on') } }
+
+    function animateDot(fromId, toId, color, dur) {
+      return new Promise(resolve => {
+        const [x1, y1] = pos[fromId], [x2, y2] = pos[toId];
+        dot.style.background = color; dot.style.boxShadow = `0 0 12px ${color}`;
+        dot.style.left = x1 + 'px'; dot.style.top = y1 + 'px'; dot.style.opacity = '1';
+        dot.style.transition = `left ${dur}ms ease-in-out, top ${dur}ms ease-in-out`;
+        requestAnimationFrame(() => { dot.style.left = x2 + 'px'; dot.style.top = y2 + 'px' });
+        setTimeout(() => { dot.style.opacity = '0'; dot.style.transition = 'none'; resolve() }, dur + 50);
+      });
+    }
+    function highlightArrow(id, on) { const el = document.getElementById(id); if (!el) return; if (on) el.classList.add('arrow-active'); else el.classList.remove('arrow-active') }
+    function setStatus(m, d) { statusMain.textContent = m; statusDetail.textContent = d || '' }
+    function wait(ms) { return new Promise(r => setTimeout(r, ms)) }
+
+    const steps = [
+      async () => { setActive(['office', 'remote']); setBadge('b-office', 'Private'); setBadge('b-remote', 'Public'); setStatus('PowerShell Agents Collecting Inventory on 1M+ Endpoints', 'WMI queries: Hardware, Software, Drivers, Custom payloads'); await wait(3600) },
+      async () => { setStatus('SHA-256 Hash Gate — Comparing vs. Yesterday\'s Cache', 'Only transmitting CHANGED payloads to minimize bandwidth'); await wait(3300) },
+      async () => { setActive(['office', 'pubip', 'func']); setStatus('Office Endpoints → Corporate VPN → Public IP → Azure Functions', 'Private IP routed through corporate VNet tunnel'); highlightArrow('a1', true); highlightArrow('a3', true); await animateDot('office', 'pubip', '#3b82f6', 800); await animateDot('pubip', 'func', '#a78bfa', 800); highlightArrow('a1', false); highlightArrow('a3', false); await wait(1200) },
+      async () => { setActive(['remote', 'internet', 'pubip', 'func']); setStatus('Remote Endpoints → Internet → Public IP → Azure Functions', 'Public IP over HTTPS TLS 1.2 — No VPN required'); highlightArrow('a2a', true); highlightArrow('a2b', true); highlightArrow('a3', true); await animateDot('remote', 'internet', '#0ea5e9', 600); await animateDot('internet', 'pubip', '#0ea5e9', 600); await animateDot('pubip', 'func', '#a78bfa', 600); highlightArrow('a2a', false); highlightArrow('a2b', false); highlightArrow('a3', false); await wait(1200) },
+      async () => { setActive(['func', 'insights']); setBadge('b-func', 'POST'); setStatus('Azure Functions (EP1) — Auto-Scaling 1 → 1,000+ Containers', 'Validating API Key · Enriching IngestionTimestamp + MessageId (UUID)'); await wait(3300) },
+      async () => { setActive(['func', 'adls']); setStatus('Streaming Raw JSON → ADLS Gen2 Landing Zone (ZRS)', 'Path: raw/{PayloadType}/YYYY/MM/DD/{EndpointId}_{UUID}.json'); highlightArrow('a4', true); await animateDot('func', 'adls', '#22d3ee', 900); highlightArrow('a4', false); await wait(1200) },
+      async () => { setActive(['adls', 'bronze', 'unity']); setBadge('b-bronze', 'RAW'); setStatus('Bronze Layer — Raw JSON Validation + Error Interception', 'AnalysisException guard · _corrupt_record detection · Unity Catalog lineage'); highlightArrow('a5', true); await animateDot('adls', 'bronze', '#d97706', 900); highlightArrow('a5', false); await wait(1500) },
+      async () => { setActive(['bronze', 'quarantine']); setBadge('b-quar', '3 BAD'); setStatus('Quarantine — Routing 3 Malformed JSON Records', 'QuarantineReason: "Malformed JSON — PySpark _corrupt_record"'); highlightArrow('a-q', true); await animateDot('bronze', 'quarantine', '#ef4444', 800); highlightArrow('a-q', false); await wait(2400) },
+      async () => { setActive(['bronze', 'silver', 'unity']); setBadge('b-silver', '73'); setStatus('Silver Layer — Intra-Batch Deduplication (73 unique records)', 'Window(partitionBy=EndpointId) · rank() == 1 · explode_outer(InstalledSoftware)'); highlightArrow('a6', true); await animateDot('bronze', 'silver', '#9ca3af', 900); highlightArrow('a6', false); await wait(1200) },
+      async () => { setActive(['silver', 'unity']); setStatus('Silver — SHA-256 PayloadHash Generation', 'sha2(to_json(struct(*payload_cols)), 256) for SCD2 change detection'); await wait(3300) },
+      async () => { setActive(['silver', 'gold', 'unity']); setBadge('b-gold', '73'); setStatus('Gold Layer — SCD Type 2 Delta Merge (73 records)', 'MERGE INTO dim_software WHEN MATCHED AND PayloadHash != target.PayloadHash'); highlightArrow('a7', true); await animateDot('silver', 'gold', '#facc15', 900); highlightArrow('a7', false); await wait(1200) },
+      async () => { setActive(['gold', 'unity']); setStatus('Gold — Expiring Old: IsActive=False · Inserting New: IsActive=True', 'Schema Auto-Evolution via Delta autoMerge · ValidFrom/ValidTo timestamping'); await wait(3300) },
+      async () => { setActive(['gold', 'pbi']); setStatus('Power BI — DirectQuery to Gold Delta Tables', 'dim_hardware | dim_software | dim_drivers | dim_custom'); highlightArrow('a8', true); await animateDot('gold', 'pbi', '#34d399', 900); highlightArrow('a8', false); await wait(1800) },
+      async () => { clearAll(); setBadge('b-func', ''); setBadge('b-bronze', ''); setBadge('b-silver', ''); setBadge('b-gold', ''); setBadge('b-quar', ''); setBadge('b-office', ''); setBadge('b-remote', ''); setStatus('Pipeline Complete — All Records Historized via SCD Type 2', '1M+ endpoints · Unity Catalog governed · VNet isolated · Quarantine enforced'); await wait(4500) }
+    ];
+
+    async function runLoop() { while (true) { for (const s of steps) await s(); clearAll(); setStatus('', ''); await wait(2200) } }
+    runLoop();
+  </script>
+</body>
+
+</html>

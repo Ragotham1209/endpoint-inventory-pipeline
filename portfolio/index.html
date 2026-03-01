@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ragotham Kanchi — Data Engineer</title>
+    <meta name="description"
+        content="Data Engineer specializing in Azure Databricks, Delta Lake, and enterprise-scale ETL pipelines.">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap"
+        rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0a0a1a;
+            color: #e2e8f0;
+            overflow-x: hidden;
+        }
+
+        /* Subtle grid background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            z-index: 0;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 32px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Navigation */
+        nav {
+            padding: 20px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        nav .container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .nav-name {
+            font-weight: 700;
+            font-size: 18px;
+            color: #f1f5f9;
+            letter-spacing: -0.5px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+        }
+
+        .nav-links a {
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-links a:hover {
+            color: #f1f5f9;
+        }
+
+        /* Hero */
+        .hero {
+            padding: 80px 0 60px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(59, 130, 246, 0.12);
+            color: #60a5fa;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            font-weight: 900;
+            letter-spacing: -1.5px;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #f1f5f9 0%, #94a3b8 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero .subtitle {
+            font-size: 20px;
+            color: #64748b;
+            margin-top: 16px;
+            font-weight: 400;
+        }
+
+        .hero .desc {
+            font-size: 15px;
+            color: #475569;
+            margin-top: 12px;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.7;
+        }
+
+        /* Stats Bar */
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            padding: 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            margin: 0 0 60px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #f1f5f9;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Section Headers */
+        .section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #3b82f6;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .section-heading {
+            font-size: 28px;
+            font-weight: 800;
+            color: #f1f5f9;
+            letter-spacing: -0.5px;
+            margin-bottom: 32px;
+        }
+
+        /* Project Card */
+        .project-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 40px;
+            margin-bottom: 32px;
+            transition: border-color 0.3s;
+        }
+
+        .project-card:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .project-card h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #f1f5f9;
+            margin-bottom: 12px;
+        }
+
+        .project-card .project-desc {
+            font-size: 14px;
+            color: #94a3b8;
+            line-height: 1.7;
+            margin-bottom: 20px;
+        }
+
+        .project-img {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 24px;
+        }
+
+        .tech-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .tech-tag {
+            background: rgba(59, 130, 246, 0.08);
+            color: #60a5fa;
+            padding: 5px 14px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            border: 1px solid rgba(59, 130, 246, 0.15);
+        }
+
+        .project-links {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: #fff;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.06);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Tech Stack Grid */
+        .stack-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 60px;
+        }
+
+        .stack-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 10px;
+            padding: 16px 20px;
+            transition: border-color 0.2s;
+        }
+
+        .stack-item:hover {
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .stack-item .stack-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #f1f5f9;
+        }
+
+        .stack-item .stack-type {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 2px;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            text-align: center;
+        }
+
+        footer p {
+            font-size: 13px;
+            color: #475569;
+        }
+
+        footer a {
+            color: #60a5fa;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .stats {
+                flex-wrap: wrap;
+                gap: 24px;
+            }
+
+            .project-card {
+                padding: 24px;
+            }
+
+            .stack-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="container">
+            <div class="nav-name">Ragotham Kanchi</div>
+            <div class="nav-links">
+                <a href="#projects">Projects</a>
+                <a href="#stack">Tech Stack</a>
+                <a href="https://github.com/Ragotham1209" target="_blank">GitHub</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <div class="container">
+            <div class="hero-badge">DATA ENGINEER</div>
+            <h1>Building Data Platforms<br />at Enterprise Scale</h1>
+            <p class="subtitle">Azure | Databricks | Delta Lake | PySpark</p>
+            <p class="desc">I design and build production-grade data engineering pipelines that process millions of
+                records with full SCD Type 2 dimensional history, governed by Unity Catalog and secured within Azure
+                VNet boundaries.</p>
+        </div>
+    </section>
+
+    <div class="container">
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value">1M+</div>
+                <div class="stat-label">Endpoints Managed</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">50M+</div>
+                <div class="stat-label">Historical Records</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">SCD2</div>
+                <div class="stat-label">Type 2 Historization</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value">Zero</div>
+                <div class="stat-label">Idle Cost Architecture</div>
+            </div>
+        </div>
+    </div>
+
+    <section id="projects">
+        <div class="container">
+            <div class="section-title">Featured Project</div>
+            <div class="section-heading">Enterprise Endpoint Inventory Pipeline</div>
+
+            <div class="project-card">
+                <img class="project-img" src="../docs/architecture.png" alt="Production Architecture Diagram" />
+
+                <h3>SCD Type 2 Pipeline on Azure Databricks</h3>
+                <p class="project-desc">
+                    A production-grade data engineering pipeline that collects system inventory from 1M+ Windows
+                    endpoints, ingests payloads through auto-scaling Azure Functions (EP1), and maintains full
+                    dimensional history using SCD Type 2 merge patterns on Databricks Delta Lake. The architecture
+                    features VNet-injected compute, Unity Catalog governance, SHA-256 change detection at the edge, and
+                    Medallion Architecture processing with automated quarantine isolation.
+                </p>
+
+                <div class="tech-tags">
+                    <span class="tech-tag">Python 3.11</span>
+                    <span class="tech-tag">PySpark 3.5</span>
+                    <span class="tech-tag">Azure Databricks</span>
+                    <span class="tech-tag">Delta Lake 3.2</span>
+                    <span class="tech-tag">Azure Functions</span>
+                    <span class="tech-tag">ADLS Gen2</span>
+                    <span class="tech-tag">Unity Catalog</span>
+                    <span class="tech-tag">Azure Key Vault</span>
+                    <span class="tech-tag">Azure VNet</span>
+                    <span class="tech-tag">Bicep IaC</span>
+                    <span class="tech-tag">PowerShell</span>
+                    <span class="tech-tag">Power BI</span>
+                </div>
+
+                <div class="project-links">
+                    <a href="../docs/dataflow_animation.html" class="btn btn-primary">View Live Data Flow</a>
+                    <a href="https://github.com/Ragotham1209/endpoint-inventory-pipeline" class="btn btn-secondary">View
+                        Source Code</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="stack">
+        <div class="container">
+            <div class="section-title">Expertise</div>
+            <div class="section-heading">Tech Stack</div>
+
+            <div class="stack-grid">
+                <div class="stack-item">
+                    <div class="stack-name">Azure Databricks</div>
+                    <div class="stack-type">Processing Engine</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Delta Lake</div>
+                    <div class="stack-type">Table Format</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Apache Spark / PySpark</div>
+                    <div class="stack-type">Distributed Computing</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Azure Data Lake Gen2</div>
+                    <div class="stack-type">Cloud Storage</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Azure Functions</div>
+                    <div class="stack-type">Serverless Compute</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Unity Catalog</div>
+                    <div class="stack-type">Data Governance</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Python</div>
+                    <div class="stack-type">Core Language</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">PowerShell</div>
+                    <div class="stack-type">Edge Automation</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Azure Bicep</div>
+                    <div class="stack-type">Infrastructure as Code</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Power BI</div>
+                    <div class="stack-type">Visualization</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Azure Key Vault</div>
+                    <div class="stack-type">Secrets Management</div>
+                </div>
+                <div class="stack-item">
+                    <div class="stack-name">Microsoft Entra ID</div>
+                    <div class="stack-type">Identity and Access</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>Built by <a href="https://github.com/Ragotham1209">Ragotham Kanchi</a></p>
+        </div>
+    </footer>
+
+</body>
+
+</html>
