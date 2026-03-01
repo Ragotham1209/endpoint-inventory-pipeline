@@ -18,7 +18,8 @@ A production-grade data engineering pipeline that collects system inventory from
   <img src="docs/architecture.png" alt="Production Architecture" width="850"/>
 </p>
 
-> **[View Live Animated Data Flow](https://ragotham1209.github.io/endpoint-inventory-pipeline/docs/dataflow_animation.html)** — Interactive GitHub Pages demo
+> 🌐 **[View Interactive Portfolio](https://ragotham1209.github.io/endpoint-inventory-pipeline/)** — Architecture, Tech Stack, and Tech Blog
+> 🔴 **[View Live Animated Data Flow](https://ragotham1209.github.io/endpoint-inventory-pipeline/docs/dataflow_animation.html)** — Interactive GitHub Pages demo
 
 ---
 
