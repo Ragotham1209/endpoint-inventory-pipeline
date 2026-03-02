@@ -209,13 +209,19 @@ def process_inventory_batch(spark, payload_type, raw_path, silver_path, gold_pat
                  .withColumn("ValidFrom", current_timestamp()) \
                  .withColumn("ValidTo", to_timestamp(lit("9999-12-31 23:59:59"))) \
                  .write.format("delta").save(gold_path)
-        logger.info(f"[{payload_type}] Gold table initialized successfully.")
+                 
+        # Enable Bloom Filters for O(1) hash lookups to skip reading parquet blocks
+        spark.sql(f"ALTER TABLE delta.`{gold_path}` SET TBLPROPERTIES ('delta.bloomFilter.columns'='EndpointId,PayloadHash')")
+        logger.info(f"[{payload_type}] Gold table initialized with Bloom Filters successfully.")
         return
 
     gold_table = DeltaTable.forPath(spark, gold_path)
     
+    from pyspark.sql.functions import broadcast
+    
     # Identify which records need to be expired because the actual payload data has changed
-    staged_updates = silver_df.alias("stg") \
+    # DSA Optimization: Use Broadcast Hash Join. Moves small 'stg' to node RAM for O(1) hash map lookups, eliminating O(N log N) network shuffle
+    staged_updates = broadcast(silver_df.alias("stg")) \
         .join(
             spark.read.format("delta").load(gold_path).alias("gld"),
             (col("stg.EndpointId") == col("gld.EndpointId")) & (col("gld.IsActive") == True),
@@ -252,8 +258,8 @@ def process_inventory_batch(spark, payload_type, raw_path, silver_path, gold_pat
 
     logger.info(f"[{payload_type}] Running Storage Maintenance (OPTIMIZE and VACUUM)...")
     try:
-        # Compact small parquet files into larger, efficient files
-        gold_table.optimize().executeCompaction()
+        # DSA Optimization: Z-Order Curves. Physically clusters Parquet files mathematically to drop file scanning complexity from O(F) to O(log F)
+        gold_table.optimize().executeZOrderBy("EndpointId")
         # Delete old, unreferenced parquet files from the data lake older than 7 days (168 hours)
         gold_table.vacuum(168)
         logger.info(f"[{payload_type}] Storage Maintenance complete.")

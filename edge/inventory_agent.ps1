@@ -164,15 +164,28 @@ $UninstallPaths = @(
     "HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*",
     "HKLM:\Software\Wow6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*"
 )
-$InstalledSoftware = @()
+# Pre-allocate .NET generic lists for memory efficiency (O(1) capacity reallocation)
+$SoftwareList = [System.Collections.Generic.List[PSCustomObject]]::new(200)
+$SeenSet = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+
 foreach ($Path in $UninstallPaths) {
     if (Test-Path $Path) {
-        $InstalledSoftware += Get-ItemProperty $Path -ErrorAction SilentlyContinue | 
-        Where-Object { $_.DisplayName -ne $null -and $_.SystemComponent -ne 1 } | 
-        Select-Object DisplayName, DisplayVersion, Publisher
+        $Keys = Get-ItemProperty $Path -ErrorAction SilentlyContinue | 
+        Where-Object { $_.DisplayName -ne $null -and $_.SystemComponent -ne 1 }
+            
+        foreach ($Item in $Keys) {
+            $Name = $Item.DisplayName.Trim()
+            # HashSet Add() acts as an O(1) deduplication filter
+            if ($SeenSet.Add($Name)) {
+                $SoftwareList.Add([PSCustomObject]@{
+                        DisplayName    = $Name
+                        DisplayVersion = $Item.DisplayVersion
+                    })
+            }
+        }
     }
 }
-$InstalledSoftware = $InstalledSoftware | Sort-Object DisplayName -Unique | Select-Object DisplayName, DisplayVersion
+$InstalledSoftware = $SoftwareList.ToArray()
 
 $SoftwareData = @{
     SoftwareCount     = $InstalledSoftware.Count
