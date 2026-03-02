@@ -31,8 +31,8 @@ A production-grade data engineering pipeline that collects system inventory from
 | **Edge** | Fleet Stampede Prevention | Randomized jitter (0-300s) prevents API overload when all endpoints execute simultaneously via Group Policy |
 | **Ingestion** | Auto-Scaling Functions | Azure Functions EP1 scales from 1 to 1,000+ containers to absorb morning boot spikes |
 | **Ingestion** | Managed Identity Auth | Zero credentials in code — SystemAssigned identity accesses ADLS Gen2 via Azure RBAC |
-| **Processing** | Medallion Architecture | Bronze (raw validation) to Silver (dedup + flatten) to Gold (SCD2 merge) with Delta Lake |
-| **Processing** | Dynamic JSON Flattening | `explode_outer` unpacks nested arrays + structs into 1NF for Power BI consumption |
+| **Processing** | Medallion Architecture | Bronze (raw validation) to Silver (SHA-256 dedup) to Gold (SCD2 merge) with Delta Lake |
+| **Storage** | Native Delta Arrays | Complex JSON nesting stored completely natively as `ARRAY<STRUCT>` to eliminate mathematical 1-to-many 1NF data lake bloat |
 | **Processing** | Quarantine Isolation | Malformed JSON (`_corrupt_record`) and missing `EndpointId` records route to quarantine |
 | **Processing** | PayloadHash Dedup | `sha2(to_json(struct(*)))` generates deterministic hashes to prevent redundant SCD2 rows |
 | **Governance** | Unity Catalog | Metastore, data lineage, user isolation, and audit logging across all Delta tables |
@@ -131,8 +131,8 @@ Upload `spark_pipeline/scd2_processor.py` to Databricks and create a job:
 1M+ Endpoints --> SHA-256 Hash Gate --> Azure Functions (EP1)
   --> ADLS Gen2 Raw Zone (ZRS)
     --> Databricks Bronze (Validation + Quarantine)
-      --> Silver (Dedup + Flatten)
-        --> Gold (SCD2 MERGE: IsActive / ValidFrom / ValidTo)
+      --> Silver (Dedup via SHA-256 Windowing)
+        --> Gold (SCD2 Native Array MERGE)
           --> Power BI DirectQuery
 ```
 

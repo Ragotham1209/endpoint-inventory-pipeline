@@ -60,7 +60,7 @@ The core of the ETL process runs on a scheduled Azure Databricks Premium cluster
 #### Bronze: Validation & Quarantine
 The raw JSON is read from the ADLS Gen2 landing zone. Corrupt JSON payloads (flagged by PySpark's native `_corrupt_record` handler) are dynamically routed to a dedicated quarantine table. This prevents bad agent data from paralyzing the entire batch job.
 
-#### Silver: Deduplication & Array Flattening
+#### Silver: Deduplication
 Even with the edge hash gate, a highly mobile laptop might send 3 identical payloads in one day due to network connection retries. 
 
 We use a PySpark Window function partitioned by `EndpointId` to deterministically select only the most recent payload for that execution cycle.
@@ -71,7 +71,9 @@ silver_df = clean_df.withColumn("rank", rank().over(windowSpec)) \
     .filter(col("rank") == 1).drop("rank")
 ```
 
-Next, because endpoints transmit software and drivers as heavily nested JSON arrays, we must dynamically flatten them for tabular reporting. We use `explode_outer` to atomize these arrays into First Normal Form (1NF) datasets.
+Next, because endpoints transmit software and drivers as heavily nested JSON arrays, explicitly flattening them in the data lake (1NF) would mathematically multiply a single endpoint's physical storage by the number of applications installed (e.g., 73 apps = 73 redundant rows), causing massive storage bloat and exponentially increasing the `MERGE` execution duration.
+
+To eliminate this 1-to-many data lake bloat, we natively preserve the nested JSON arrays as optimized Delta Lake `ARRAY<STRUCT<...>>` columns. This maintains an ultra-efficient footprint of strictly **1 physical row per endpoint**. The PowerBI developer simply clicks "Expand to New Rows" natively inside Power Query to dynamically flatten the arrays purely within the BI memory engine!
 
 #### Gold: SCD Type 2 Delta Merge
 To provide Power BI with accurate point-in-time reporting (e.g., "What software was installed on laptop XYZ *last month*?"), we implement Slowly Changing Dimension (SCD) Type 2 logic.
