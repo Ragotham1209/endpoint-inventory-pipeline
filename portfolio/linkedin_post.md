@@ -1,27 +1,22 @@
-🚀 **How I saved $2.1M/year and cut Databricks ETL time by 85% tracking 1M+ Endpoints**
+Early on in my data engineering journey, I thought the job was just about getting data from Point A to Point B. Build the pipeline, make sure it doesn't break, and call it a day. 
 
-Data Engineering isn't just about moving data from A to B; it's about doing it efficiently at scale. Recently, I completely overhauled the Enterprise Endpoint Inventory Pipeline that tracks hardware, software, and driver telemetry for over 1,000,000 Windows devices.
+Then I tried tracking telemetry for 1 million endpoints. 
 
-If we routed 2TB of daily JSON state directly into Azure Log Analytics, the ingestion bill alone would hit **~$179,000/month**. Instead, I built a serverless Azure Functions gateway to land the data in ADLS Gen2, and used Azure Databricks (PySpark) to maintain SCD Type 2 history in Delta Lake.
+I quickly realized that if I just brute-forced it and streamed everything directly into Azure Log Analytics, the ingestion bill would be completely insane—we're talking over $170k a month just for logs. That was a huge wake-up call for me. It taught me that it’s not just about building something that works; it’s about understanding the resources you’re consuming and engineering a way to do it efficiently.
 
-But PySpark can get expensive too if not tuned correctly. To drastically compress our Databricks compute costs, I implemented three core Data Structures & Algorithms (DSA) optimizations:
+I ended up scrapping the native logging approach entirely. Instead, I planned a custom architecture using serverless Azure Functions to land the JSON payloads in ADLS Gen2, and used Databricks (PySpark) to process the history using a Medallion architecture on Delta Lake. 
 
-1️⃣ **O(N) HashSets at the Edge**
-Rather than having 1M+ laptops run `Sort-Object -Unique` (an O(N log N) sorting process causing memory reallocation thrashing), I rewrote the PowerShell deduplication using pre-allocated `.NET List` and `HashSet` classes. This O(1) string matching saved **27+ hours of fleet CPU execution time daily**, entirely eliminating background lag.
+But even then, running a daily PySpark `MERGE` on 50 million historical records was taking almost an hour and chewing through expensive Databricks compute. 
 
-2️⃣ **O(Log F) Z-Order Curves & O(1) Bloom Filters**
-Instead of the PySpark engine executing an O(F) scan of every Parquet file in the data lake, I added an `OPTIMIZE ... ZORDER BY (EndpointId)` command and Bloom Filters on the `PayloadHash`. This mathematically clusters identical devices into space-filling curves and allows Databricks to deterministically skip 99% of file reads without parsing metadata.
+So, I went back to the drawing board and dug into foundational Data Structures and Algorithms to optimize the actual code:
+1. I swapped out the slow PowerShell array sorting on the laptops for O(1) .NET HashSets, stopping the edge scripts from draining user CPU.
+2. I implemented Broadcast Hash Joins in PySpark to build in-memory hash maps, completely cutting out the massive network shuffle latency.
+3. I used Z-Order Curves to mathematically group the Parquet files and added Bloom Filters, which let Databricks instantly skip reading 99% of the data lake.
 
-3️⃣ **O(1) Broadcast Hash Joins**
-Our daily SCD2 `MERGE` was previously executing an O(N log N) Sort-Merge-Join network shuffle of 50M+ rows. I wrapped the incoming daily payload stream in a `broadcast()` hint, forcing PySpark to build an O(1) HashMap in the RAM of all worker nodes. This completely severed the network latency.
+The result? The daily Databricks ETL time dropped from an hour down to under 8 minutes, and the compute costs dropped by over 80%. 
 
-💡 **The Result?**
-ETL execution times plummeted from ~60 minutes to under 8 minutes per day. 
-By heavily applying computer science fundamentals to cloud architecture, our monthly Databricks compute bill dropped by over 80%.
+It was an awesome learning experience. It showed me that writing code is really only half the job. Planning the architecture, forecasting the scale, and relentlessly optimizing your resources is what actually makes the whole system work in the real world.
 
-Check out the interactive Medallion Architecture data flow and the full open-source codebase in my portfolio! 👇
+I put together an animation of the data flow below, and the full code is on my portfolio: ragotham1209.github.io/endpoint-inventory-pipeline
 
-🔗 **Live Portfolio:** ragotham1209.github.io/endpoint-inventory-pipeline
-🔗 **Source Code:** github.com/Ragotham1209/endpoint-inventory-pipeline
-
-#DataEngineering #Azure #Databricks #PySpark #DeltaLake #BigData #Optimization
+![Architecture Data Flow Animation](dataflow_animation.gif)
