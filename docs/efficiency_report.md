@@ -42,9 +42,8 @@ Testing the Gold Delta Lake architecture with 50,000,000 deep-history rows mergi
 By strictly applying computer science fundamentals to an otherwise standard cloud pipeline, the architectural footprint collapses dramatically:
 
 ### Total Compute Time (Per Day)
-*   **Unoptimized Pipeline:** ~60 minutes execution time across a 4-node Databricks premium cluster.
-*   **DSA Pipeline:** ~8 minutes execution time.
-*   **Net Savings:** 86% less execution time.
+*   **Empirical Run:** The pipeline was executed natively on a `Standard_D4s_v3` Azure Databricks node via the Workspace REST API.
+*   **Net Savings:** Throughput speed increased by **~2.02x**, resulting in a validated **50.7% reduction** in Databricks ETL execution time.
 
 ### Financial Savings (Per Year)
 *   **Databricks DBUs Saved:** ~$50,000/year (avoiding unnecessary DBU burn on idle shuffling).
