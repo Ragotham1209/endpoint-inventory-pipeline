@@ -180,21 +180,6 @@ def process_inventory_batch(spark, payload_type, raw_path, silver_path, gold_pat
                 silver_df = silver_df.withColumn(field.name, col(f"Data.{field.name}"))
             silver_df = silver_df.drop("Data")
 
-        # Phase 2: Explode Arrays into individual Rows for PowerBI 1NF normalization
-        for field in silver_df.schema.fields:
-            if isinstance(field.dataType, ArrayType):
-                logger.info(f"[{payload_type}] Exploding array column: {field.name}")
-                silver_df = silver_df.withColumn(field.name, explode_outer(col(field.name)))
-                
-                # If the array was full of Structs (like dictionaries of Software), unpack those too!
-                if isinstance(field.dataType.elementType, StructType):
-                    for sub_field in field.dataType.elementType.fields:
-                        silver_df = silver_df.withColumn(
-                            f"{field.name}_{sub_field.name}", 
-                            col(f"{field.name}.{sub_field.name}")
-                        )
-                    silver_df = silver_df.drop(field.name)
-
     # Deterministically hash the actual payload data to prevent redundant SCD2 rows if identical data is sent
     from pyspark.sql.functions import sha2, to_json, struct
     exclude_cols = {"EndpointId", "IngestionTimestamp", "MessageId", "QuarantineReason", "IsActive", "ValidFrom", "ValidTo"}
@@ -210,9 +195,7 @@ def process_inventory_batch(spark, payload_type, raw_path, silver_path, gold_pat
                  .withColumn("ValidTo", to_timestamp(lit("9999-12-31 23:59:59"))) \
                  .write.format("delta").save(gold_path)
                  
-        # Enable Bloom Filters for O(1) hash lookups to skip reading parquet blocks
-        spark.sql(f"ALTER TABLE delta.`{gold_path}` SET TBLPROPERTIES ('delta.bloomFilter.columns'='EndpointId,PayloadHash')")
-        logger.info(f"[{payload_type}] Gold table initialized with Bloom Filters successfully.")
+        logger.info(f"[{payload_type}] Gold table initialized successfully.")
         return
 
     gold_table = DeltaTable.forPath(spark, gold_path)
