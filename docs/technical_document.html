@@ -335,7 +335,8 @@
     <ul>
         <li><strong>Azure Functions:</strong> The <code>function_app.py</code> script routes standard Python
             <code>logging</code> directly to Azure Application Insights. All <code>202 Accepted</code> and
-            <code>500 Server Error</code> results are natively indexed for SLA monitoring.</li>
+            <code>500 Server Error</code> results are natively indexed for SLA monitoring.
+        </li>
         <li><strong>Azure Databricks:</strong> The <code>scd2_processor.py</code> utilizes structured Python logging
             with timestamps. Databricks inherently hooks into the stdout pipeline, capturing these entries directly into
             the Driver Logs for real-time observability.</li>
@@ -347,9 +348,11 @@
             Managed Identity. No connection strings, SAS tokens, or static passwords are hardcoded anywhere in the
             codebase.</li>
         <li><strong>Role-Based Access Control (RBAC):</strong> The Bicep template dynamically assigns
-            <code>Storage Blob Data Contributor</code> to the Function App's Service Principal ID.</li>
+            <code>Storage Blob Data Contributor</code> to the Function App's Service Principal ID.
+        </li>
         <li><strong>Private Subnets:</strong> The Databricks workspace is injected into a dedicated Virtual Network with
-            <code>public</code> and <code>private</code> delegation subnets. Public IP is disabled.</li>
+            <code>public</code> and <code>private</code> delegation subnets. Public IP is disabled.
+        </li>
         <li><strong>Key Vault Integration:</strong> All secrets (storage account keys, function keys) are stored in
             Azure Key Vault and accessed via RBAC — never embedded in source code.</li>
     </ol>
@@ -372,12 +375,12 @@ silver_df = clean_df.withColumn("rank", rank().over(windowSpec)) \
 hash_cols = [c for c in sorted(silver_df.columns) if c not in exclude_cols]
 silver_df = silver_df.withColumn("PayloadHash", sha2(to_json(struct(*[col(c) for c in hash_cols])), 256))</code></pre>
 
-    <h3>4.2 First-Normal-Form Array Flattening</h3>
-    <p>Endpoints transmit software and driver lists as heavily nested JSON arrays. The processor dynamically detects and
-        atomizes these arrays into cleanly flattened rows suitable for Power BI dimensional modeling.</p>
-    <pre><code>for field in silver_df.schema.fields:
-    if isinstance(field.dataType, ArrayType):
-        silver_df = silver_df.withColumn(field.name, explode_outer(col(field.name)))</code></pre>
+    <h3>4.2 Native Delta Array Structures (ARRAY&lt;STRUCT&gt;)</h3>
+    <p>Endpoints transmit software and driver lists as heavily nested JSON arrays. Explicitly flattening them in PySpark
+        (First Normal Form) would mathematically multiply a single endpoint's physical storage by the number of
+        applications installed. To permanently eliminate this data lake bloat, the processor preserves the arrays
+        natively as Gold Delta Lake <code>ARRAY&lt;STRUCT&gt;</code> columns, maintaining an ultra-efficient 1-to-1
+        footprint.</p>
 
     <h3>4.3 Graceful Error Interception</h3>
     <p>Standard Spark behavior throws hard crash exceptions when reading empty directories or encountering rotating

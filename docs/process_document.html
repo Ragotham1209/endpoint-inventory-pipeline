@@ -298,11 +298,13 @@
 
     <div class="step"><span class="step-num">1</span>
         <div class="step-content"><strong>Authentication:</strong> Validates the Function Key via the
-            <code>x-functions-key</code> header.</div>
+            <code>x-functions-key</code> header.
+        </div>
     </div>
     <div class="step"><span class="step-num">2</span>
         <div class="step-content"><strong>Extraction:</strong> Extracts <code>EndpointId</code> and
-            <code>PayloadType</code> from the JSON body.</div>
+            <code>PayloadType</code> from the JSON body.
+        </div>
     </div>
     <div class="step"><span class="step-num">3</span>
         <div class="step-content"><strong>Enrichment:</strong> Injects server-side <code>IngestionTimestamp</code> (UTC)
@@ -349,9 +351,11 @@
         <li><strong>Intra-Batch Deduplication:</strong> In mobile environments, endpoints may send duplicate payloads
             due to network retries. PySpark Window functions partitioned by <code>EndpointId</code> select only the most
             recent payload per execution cycle.</li>
-        <li><strong>Array Normalization:</strong> Dynamically flattens nested JSON arrays (e.g.,
-            <code>InstalledSoftware</code>) into top-level columns via <code>explode_outer</code> for First Normal Form
-            (1NF) compatibility.</li>
+        <li><strong>Native Array Processing:</strong> Deeply nested JSON lists (e.g.,
+            <code>InstalledSoftware</code>) are mathematically conserved into optimized <code>ARRAY&lt;STRUCT&gt;</code>
+            Delta structures to guarantee exactly 1 physical row per endpoint, preventing First Normal Form (1NF) data
+            lake bloat.
+        </li>
         <li><strong>Deterministic Hashing:</strong> Generates a SHA-256 hash of the entire payload for cross-batch
             deduplication during the Gold merge phase.</li>
     </ol>
@@ -364,9 +368,11 @@
         <li>Performs a cryptographic comparison: <code>source.PayloadHash != target.PayloadHash</code>. If data is
             identical, the record is silently skipped.</li>
         <li>If an endpoint's data has changed, the existing active record is expired (<code>IsActive = False</code>,
-            <code>ValidTo = current_timestamp()</code>).</li>
+            <code>ValidTo = current_timestamp()</code>).
+        </li>
         <li>The new payload is inserted as a fresh record with <code>IsActive = True</code> and
-            <code>ValidFrom = current_timestamp()</code>.</li>
+            <code>ValidFrom = current_timestamp()</code>.
+        </li>
         <li>Schema auto-evolution is enabled via <code>spark.databricks.delta.schema.autoMerge</code> to accommodate new
             JSON fields without manual DDL.</li>
     </ol>
